@@ -1,0 +1,102 @@
+name: Build MechWild firmware
+on: [push, workflow_dispatch]
+# NOTE: workflow_dispatch is only available for the default branch, SIGH ("https://docs.github.com/en/actions/managing-workflow-runs/manually-running-a-workflow#configuring-a-workflow-to-run-manually")
+
+permissions: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: qmkfm/qmk_cli
+    strategy:
+      fail-fast: false
+      # TODO: break the matrix construction out into its own job, zmk-style?
+      matrix:
+        #keyboard: [bde/rev2, mercutio, mokulua/standard, mokulua/mirrored, murphpad, obe/f401, obe/f411, obe/f401/eeprom, obe/f411/eeprom, puckbuddy, waka60/f401, waka60/f401/eeprom, waka60/f411, waka60/f411/eeprom]
+        keyboard: [mercutio, murphpad, obe/f401, obe/f411, obe/f401/eeprom, obe/f411/eeprom, puckbuddy, waka60/f401, waka60/f401/eeprom, waka60/f411, waka60/f411/eeprom]
+        keymap: [via, vial]
+        include:
+#         - keyboard: bde/rev1
+#           keymap: lefty_default
+#         - keyboard: bde/rev1
+#           keymap: lefty_fancy
+#         - keyboard: bde/rev1
+#           keymap: lefty_via
+#         - keyboard: bde/rev1
+#           keymap: righty_default
+#         - keyboard: bde/rev1
+#           keymap: righty_via
+          - keyboard: mercutio
+            keymap: bongocat
+          - keyboard: mercutio
+            keymap: fancy
+          - keyboard: waka/f401
+            keymap: audio
+          - keyboard: waka/f401/eeprom
+            keymap: audio
+          - keyboard: waka/f411
+            keymap: audio
+          - keyboard: waka/f411/eeprom
+            keymap: audio
+
+    steps:
+      - name: Set output variables for later job steps
+        id: vars
+        # Thanks, StackOverflow: https://stackoverflow.com/a/12704727
+        run: |
+          echo ::set-output name=cache-qmk-hash::$(git -c 'versionsort.suffix=' ls-remote --exit-code --sort='-version:refname' --tags --refs https://github.com/lesshonor/qmk_firmware '*.*.*' | grep -P 'refs/tags/\d+\.\d+\.\d+' | head -n1 | cut -f1)
+          echo ::set-output name=keyboard-filename::$(echo ${{ matrix.keyboard }} | tr '/' '_')
+
+      - name: Cache repos
+        id: cache-repos
+        uses: actions/cache@v3
+        with:
+          # TODO: Is a better key possible without cloning the repo? Vial doesn't tag...
+          key: ${{ steps.vars.outputs.cache-qmk-hash }}
+          path: |
+            qmk_firmware
+            vial-qmk
+
+      - name: Checkout QMK
+        if: ${{ ! steps.cache-repos.outputs.cache-hit || matrix.keymap != 'vial' }}
+        uses: actions/checkout@v3
+        with:
+          repository: lesshonor/qmk_firmware
+          submodules: recursive
+          path: qmk_firmware
+
+      - name: Checkout Vial
+        if: ${{ ! steps.cache-repos.outputs.cache-hit || matrix.keymap == 'vial' }}
+        uses: actions/checkout@v3
+        with:
+          repository: lesshonor/vial-qmk
+          submodules: recursive
+          path: vial-qmk
+
+      - name: Build QMK firmware
+        if: ${{ matrix.keymap != 'vial' }}
+        run: make -C qmk_firmware mechwild/${{ matrix.keyboard }}:${{ matrix.keymap }} -j$(nproc)
+
+      - name: Build Vial firmware
+        if: ${{ matrix.keymap == 'vial' }}
+        run: make -C vial-qmk make mechwild/${{ matrix.keyboard }}:${{ matrix.keymap }} -j$(nproc)
+
+      - name: Move keymaps
+        # If the keymaps aren't (re)moved, they'll end up archived with the repos!
+        run: |
+          mkdir ${{ steps.vars.outputs.keyboard-filename }} && mv */mechwild_${{ steps.vars.outputs.keyboard-filename }}_${{ matrix.keymap }}.* ${{ steps.vars.outputs.keyboard-filename }}
+
+      - name: Zip firmware
+        uses: actions/upload-artifact@v3
+        continue-on-error: false
+        with:
+          name: mechwild-keymaps
+          path: |
+            */mechwild_${{ steps.vars.outputs.keyboard-filename }}_${{ matrix.keymap }}.hex
+            */mechwild_${{ steps.vars.outputs.keyboard-filename }}_${{ matrix.keymap }}.bin
+            */mechwild_${{ steps.vars.outputs.keyboard-filename }}_${{ matrix.keymap }}.uf2
+
+      - name: Clean .build folders
+        run: |
+          [ -d qmk_firmware ] && make -C qmk_firmware clean
+          [ -d vial-qmk ] && make -C vial-qmk clean
