@@ -16,16 +16,16 @@ jobs:
         keyboard: [mercutio, murphpad, obe/f401, obe/f411, obe/f401/eeprom, obe/f411/eeprom, puckbuddy, waka60/f401, waka60/f401/eeprom, waka60/f411, waka60/f411/eeprom]
         keymap: [via, vial]
         include:
-#         - keyboard: bde/rev1
-#           keymap: lefty_default
-#         - keyboard: bde/rev1
-#           keymap: lefty_fancy
-#         - keyboard: bde/rev1
-#           keymap: lefty_via
-#         - keyboard: bde/rev1
-#           keymap: righty_default
-#         - keyboard: bde/rev1
-#           keymap: righty_via
+          - keyboard: bde/rev1
+            keymap: lefty_default
+          - keyboard: bde/rev1
+            keymap: lefty_fancy
+          - keyboard: bde/rev1
+            keymap: lefty_via
+          - keyboard: bde/rev1
+            keymap: righty_default
+          - keyboard: bde/rev1
+            keymap: righty_via
           - keyboard: mercutio
             keymap: bongocat
           - keyboard: mercutio
