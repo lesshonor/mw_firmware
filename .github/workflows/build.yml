@@ -12,8 +12,7 @@ jobs:
       fail-fast: false
       # TODO: break the matrix construction out into its own job, zmk-style?
       matrix:
-        #keyboard: [bde/rev2, bde/lefty, bde/righty, mercutio, mokulua/standard, mokulua/mirrored, murphpad, obe/f401, obe/f411, obe/f401/eeprom, obe/f411/eeprom, puckbuddy, waka60/f401, waka60/f401/eeprom, waka60/f411, waka60/f411/eeprom]
-        keyboard: [mercutio, murphpad, obe/f401, obe/f411, obe/f401/eeprom, obe/f411/eeprom, puckbuddy, waka60/f401, waka60/f401/eeprom, waka60/f411, waka60/f411/eeprom]
+        keyboard: [bde/rev2, bde/lefty, bde/righty, mercutio, mokulua/standard, mokulua/mirrored, murphpad, obe/f401, obe/f411, obe/f401/eeprom, obe/f411/eeprom, puckbuddy, waka60/f401, waka60/f401/eeprom, waka60/f411, waka60/f411/eeprom]
         keymap: [via, vial]
         include:
           - keyboard: bde/lefty
@@ -36,8 +35,8 @@ jobs:
         id: vars
         # Thanks, StackOverflow: https://stackoverflow.com/a/12704727
         run: |
-          echo ::set-output name=cache-qmk-hash::$(git -c 'versionsort.suffix=' ls-remote --exit-code --sort='-version:refname' --tags --refs https://github.com/lesshonor/qmk_firmware '*.*.*' | grep -P 'refs/tags/\d+\.\d+\.\d+' | head -n1 | cut -f1)
-          echo ::set-output name=keyboard-filename::$(echo ${{ matrix.keyboard }} | tr '/' '_')
+          echo cache-qmk-hash=$(git -c 'versionsort.suffix=' ls-remote --exit-code --sort='-version:refname' --tags --refs https://github.com/lesshonor/qmk_firmware '*.*.*' | grep -P 'refs/tags/\d+\.\d+\.\d+' | head -n1 | cut -f1) >> $GITHUB_OUTPUT
+          echo keyboard-filename=$(echo ${{ matrix.keyboard }} | tr '/' '_') >> $GITHUB_OUTPUT
 
       - name: Cache repos
         id: cache-repos
