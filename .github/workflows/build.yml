@@ -12,31 +12,23 @@ jobs:
       fail-fast: false
       # TODO: break the matrix construction out into its own job, zmk-style?
       matrix:
-        #keyboard: [bde/rev2, mercutio, mokulua/standard, mokulua/mirrored, murphpad, obe/f401, obe/f411, obe/f401/eeprom, obe/f411/eeprom, puckbuddy, waka60/f401, waka60/f401/eeprom, waka60/f411, waka60/f411/eeprom]
+        #keyboard: [bde/rev2, bde/lefty, bde/righty, mercutio, mokulua/standard, mokulua/mirrored, murphpad, obe/f401, obe/f411, obe/f401/eeprom, obe/f411/eeprom, puckbuddy, waka60/f401, waka60/f401/eeprom, waka60/f411, waka60/f411/eeprom]
         keyboard: [mercutio, murphpad, obe/f401, obe/f411, obe/f401/eeprom, obe/f411/eeprom, puckbuddy, waka60/f401, waka60/f401/eeprom, waka60/f411, waka60/f411/eeprom]
         keymap: [via, vial]
         include:
-          - keyboard: bde/rev1
-            keymap: lefty_default
-          - keyboard: bde/rev1
-            keymap: lefty_fancy
-          - keyboard: bde/rev1
-            keymap: lefty_via
-          - keyboard: bde/rev1
-            keymap: righty_default
-          - keyboard: bde/rev1
-            keymap: righty_via
+          - keyboard: bde/lefty
+            keymap: fancy
           - keyboard: mercutio
             keymap: bongocat
           - keyboard: mercutio
             keymap: fancy
-          - keyboard: waka/f401
+          - keyboard: waka60/f401
             keymap: audio
-          - keyboard: waka/f401/eeprom
+          - keyboard: waka60/f401/eeprom
             keymap: audio
-          - keyboard: waka/f411
+          - keyboard: waka60/f411
             keymap: audio
-          - keyboard: waka/f411/eeprom
+          - keyboard: waka60/f411/eeprom
             keymap: audio
 
     steps:
